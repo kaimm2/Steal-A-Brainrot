@@ -1,0 +1,85 @@
+--// Services
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
+
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+
+--// GUI
+local gui = Instance.new("ScreenGui", CoreGui)
+gui.Name = "TthanhhubV2"
+
+local frame = Instance.new("Frame", gui)
+frame.Size = UDim2.new(0,200,0,80)
+frame.Position = UDim2.new(0.05,0,0.4,0)
+frame.BackgroundColor3 = Color3.fromRGB(40,40,40)
+frame.Active = true
+frame.Draggable = true
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0,12)
+
+local title = Instance.new("TextLabel", frame)
+title.Size = UDim2.new(1,0,0,25)
+title.Position = UDim2.new(0,0,0,0)
+title.BackgroundTransparency = 1
+title.Text = "Bay"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.TextColor3 = Color3.new(1,1,1)
+
+local toggleBtn = Instance.new("TextButton", frame)
+toggleBtn.Size = UDim2.new(0.8,0,0,30)
+toggleBtn.Position = UDim2.new(0.1,0,0.5,0)
+toggleBtn.Text = "OFF"
+toggleBtn.BackgroundColor3 = Color3.fromRGB(80,160,240)
+toggleBtn.TextColor3 = Color3.new(1,1,1)
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 14
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(0,8)
+
+--// Vars
+local active = false
+local bf
+
+--// Float logic chống dịch chuyển
+local function enableFloat()
+    if bf then bf:Destroy() end
+    bf = Instance.new("BodyForce")
+    bf.Force = Vector3.new(0, workspace.Gravity * HumanoidRootPart:GetMass(), 0)
+    bf.Parent = HumanoidRootPart
+
+    -- Tự tắt sau 4s
+    task.delay(4, function()
+        disableFloat()
+        active = false
+        toggleBtn.Text = "OFF"
+    end)
+end
+
+local function disableFloat()
+    if bf then bf:Destroy() bf = nil end
+end
+
+--// Bật/tắt qua GUI
+toggleBtn.MouseButton1Click:Connect(function()
+    if not active then
+        active = true
+        toggleBtn.Text = "ON"
+        enableFloat()
+    else
+        active = false
+        toggleBtn.Text = "OFF"
+        disableFloat()
+    end
+end)
+
+--// Giữ float an toàn
+RunService.RenderStepped:Connect(function()
+    if active and bf and HumanoidRootPart then
+        -- Float nhẹ chống anti-cheat
+        bf.Force = Vector3.new(0, workspace.Gravity * HumanoidRootPart:GetMass(), 0)
+    end
+end)
+
+print("Safe Float 4s GUI loaded. Use the button to toggle float safe.")
